@@ -72,4 +72,4 @@ class Follow(models.Model):
         )
 
     def __str__(self):
-        return self.user
+        return self.user.username

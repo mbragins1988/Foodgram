@@ -1,12 +1,13 @@
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 
-from api.filters import RecipeFilter
+from api.filters import NameFilter, RecipeFilter
 from api.pagination import LimitPagesPaginator
 from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from api.serializers import (AddRecipeSerializer, FollowSerializer,
@@ -20,7 +21,7 @@ from tag.models import Tag
 from users.models import Follow, User
 
 
-class UserViewSet(viewsets.ModelViewSet):
+class UserViewSet(UserViewSet):
     """Вьюсет пользователя."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -31,11 +32,16 @@ class UserViewSet(viewsets.ModelViewSet):
         methods=('get',),
         permission_classes=(IsAuthenticated,)
     )
-    def me(self, request, *args, **kwargs):
+    def me(self, request):
         user = get_object_or_404(User, pk=request.user.id)
         serializer = self.get_serializer(user)
         return Response(serializer.data)
 
+    @action(
+        detail=False,
+        methods=('post',),
+        permission_classes=(IsAuthenticated,)
+    )
     @action(
         detail=False,
         methods=('get',),
@@ -55,19 +61,19 @@ class UserViewSet(viewsets.ModelViewSet):
         methods=('post', 'delete'),
         permission_classes=(IsAuthenticated,)
     )
-    def subscribe(self, request, pk):
+    def subscribe(self, request, id):
         user = request.user
-        author = get_object_or_404(User, id=pk)
+        author = get_object_or_404(User, pk=id)
 
         if request.method == 'POST':
             if user.id == author.id:
                 return Response(
-                    {'detail': 'Невозможно подписаться на себя самого.'},
+                    {'detail': 'Невозможно подписаться на самого себя'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             if Follow.objects.filter(author=author, user=user).exists():
                 return Response(
-                    {'detail': f'Вы уже подписаны на {author}.'},
+                    {'detail': f'Вы уже подписаны на {author}'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             Follow.objects.create(user=user, author=author)
@@ -109,7 +115,7 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredients.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (NameFilter,)
     search_fields = ('^name',)
     pagination_class = None
 

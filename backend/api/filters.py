@@ -1,25 +1,34 @@
-from django_filters import rest_framework as filters
+from django_filters import rest_framework
+from rest_framework.filters import SearchFilter
 
 from recipes.models import Recipes
 from tag.models import Tag
+from users.models import User
 
 
-class RecipeFilter(filters.FilterSet):
-    """Фильтр по избранному, автору, списку покупок и тэгам"""
+class NameFilter(SearchFilter):
+    """Фильтр по имени."""
 
-    tags = filters.ModelMultipleChoiceFilter(
-        field_name="tags__slug",
+    search_param = 'name'
+
+
+class RecipeFilter(rest_framework.FilterSet):
+    """Фильтр по автору, тэгам, избранному, списку покупок."""
+
+    author = rest_framework.ModelChoiceFilter(queryset=User.objects.all())
+    tags = rest_framework.ModelMultipleChoiceFilter(
+        field_name='tags__slug',
         queryset=Tag.objects.all(),
-        to_field_name="slug",
+        to_field_name='slug',
     )
-    is_favorited = filters.BooleanFilter(method="get_is_favorited")
-    is_in_shopping_cart = filters.BooleanFilter(
+    is_favorited = rest_framework.BooleanFilter(method='get_is_favorited')
+    is_in_shopping_cart = rest_framework.BooleanFilter(
         method="get_is_in_shopping_cart"
     )
 
     class Meta:
         model = Recipes
-        fields = ("tags", "author", "is_favorited", "is_in_shopping_cart")
+        fields = ('tags', 'author', 'is_favorited', 'is_in_shopping_cart')
 
     def get_is_favorited(self, queryset, name, value):
         user = self.request.user

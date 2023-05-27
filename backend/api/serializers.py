@@ -37,9 +37,9 @@ class FollowSerializer(UserSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'username', 'first_name',
-                  'last_name', 'recipes_count', 'recipes',
-                  'is_subscribed')
+        fields = ('email', 'id', 'username', 'first_name',
+                  'last_name', 'is_subscribed', 'recipes', 'recipes_count'
+                  )
         read_only_fields = ('email', 'username',
                             'first_name', 'last_name')
 
@@ -203,44 +203,3 @@ class ShowRecipeSerializer(serializers.ModelSerializer):
         return ShoppingCart.objects.filter(
             recipe=obj, user=request.user
         ).exists()
-
-
-# class FavoriteRecipeSerializer(serializers.ModelSerializer):
-#     """Сериализатор избранного."""
-
-#     user = serializers.HiddenField(
-#         default=UserSerializer(read_only=True)
-#     )
-#     recipe = ShortRecipeSerializer(read_only=True)
-
-#     class Meta:
-
-#         model = FavoriteRecipe
-#         fields = ("user", "recipe")
-#         validators = [
-#             UniqueTogetherValidator(
-#                 queryset=FavoriteRecipe.objects.all(),
-#                 fields=("user", "recipe"),
-#                 message="Рецепт уже в избранном",
-#             )
-#         ]
-
-
-# class ShoppingCartSerializer(serializers.ModelSerializer):
-#     """Сериализатор списка покупок."""
-
-#     user = serializers.HiddenField(
-#         default=UserSerializer(read_only=True)
-#     )
-#     recipe = ShortRecipeSerializer(read_only=True)
-
-#     class Meta:
-#         model = ShoppingCart
-#         fields = ("user", "recipe")
-#         validators = [
-#             UniqueTogetherValidator(
-#                 queryset=ShoppingCart.objects.all(),
-#                 fields=("user", "recipe"),
-#                 message="Рецепт уже в списке покупок",
-#             )
-#         ]
