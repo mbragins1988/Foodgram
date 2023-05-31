@@ -1,10 +1,11 @@
 from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from recipes.models import (FavoriteRecipe, Ingredients, RecipeIngredient,
-                            Recipes, ShoppingCart)
+from recipes.models import (FavoriteRecipe, Ingredient, Recipe,
+                            RecipeIngredient, ShoppingCart)
 from tag.models import Tag
 from users.models import Follow, User
 
@@ -27,26 +28,35 @@ class UserSerializer(serializers.ModelSerializer):
             author=obj.id, user=user).exists()
 
 
-class FollowSerializer(UserSerializer):
-    """Сериализатор подписoк."""
+class AddFollowSerializer(serializers.ModelSerializer):
+    """Сериализатор создания подписок."""
 
-    recipes_count = serializers.IntegerField(source='recipes.count',
-                                             read_only=True)
-    recipes = serializers.SerializerMethodField()
-    is_subscribed = serializers.BooleanField(default=True)
+    author = serializers.IntegerField(source='author.id')
+    user = serializers.IntegerField(source='user.id')
 
     class Meta:
-        model = User
-        fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed', 'recipes', 'recipes_count'
-                  )
-        read_only_fields = ('email', 'username',
-                            'first_name', 'last_name')
+        model = Follow
+        fields = ('user', 'author')
 
-    def get_recipes(self, obj):
-        recipes = obj.recipes.all()
-        serializer = ShortRecipeSerializer(recipes, many=True)
-        return serializer.data
+    def validate(self, data):
+        user = data.get('user').get('id')
+        author = data.get('author').get('id')
+        follow = Follow.objects.filter(
+            user=user, author__id=author
+        ).exists()
+        if user == author:
+            raise serializers.ValidationError(
+                {"errors": "Невозможно подписаться на самого себя"}
+            )
+        elif follow:
+            raise serializers.ValidationError({'errors': 'Вы уже подписаны'})
+        return data
+
+    def create(self, validated_data):
+        author = validated_data.get('author')
+        author = get_object_or_404(User, pk=author.get('id'))
+        user = validated_data.get('user')
+        return Follow.objects.create(user=user, author=author)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -59,7 +69,7 @@ class IngredientSerializer(serializers.ModelSerializer):
     """Сериализатор ингредиентов."""
 
     class Meta:
-        model = Ingredients
+        model = Ingredient
         fields = (
             'id',
             'name',
@@ -71,7 +81,7 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор краткого отображения рецепта."""
 
     class Meta:
-        model = Recipes
+        model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
@@ -94,7 +104,7 @@ class ShowIngredientsInRecipeSerializer(serializers.ModelSerializer):
 class IngredientRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор добавления ингредиентов."""
 
-    id = serializers.PrimaryKeyRelatedField(queryset=Ingredients.objects.all())
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
 
     class Meta:
         model = RecipeIngredient
@@ -111,7 +121,7 @@ class AddRecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
 
     class Meta:
-        model = Recipes
+        model = Recipe
         fields = (
             'id', 'ingredients', 'tags', 'image', 'name',
             'text', 'cooking_time', 'author',
@@ -120,8 +130,8 @@ class AddRecipeSerializer(serializers.ModelSerializer):
     def validate_ingredients(self, value):
         if not value:
             raise ValidationError('Добавьте ингредиенты')
-        for i in value:
-            if i['amount'] <= 0:
+        for ingredient in value:
+            if ingredient.get('amount') <= 0:
                 raise ValidationError(
                     'Добавьте один или несколько ингредиентов'
                 )
@@ -144,7 +154,7 @@ class AddRecipeSerializer(serializers.ModelSerializer):
         tags_data = validated_data.pop('tags')
         ingredients_data = validated_data.pop('ingredients')
         image = validated_data.pop('image')
-        recipe = Recipes.objects.create(
+        recipe = Recipe.objects.create(
             image=image, author=author, **validated_data
         )
         self.__add_ingredients(ingredients_data, recipe)
@@ -176,7 +186,7 @@ class ShowRecipeSerializer(serializers.ModelSerializer):
     is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
-        model = Recipes
+        model = Recipe
         fields = (
             'id', 'tags', 'author', 'ingredients', 'is_favorited',
             'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time',
@@ -196,10 +206,26 @@ class ShowRecipeSerializer(serializers.ModelSerializer):
         ).exists()
 
     def get_is_in_shopping_cart(self, obj):
-        """Проверяем в корзине ли рецепт."""
-        request = self.context.get("request")
+        request = self.context.get('request')
         if not request or request.user.is_anonymous:
             return False
         return ShoppingCart.objects.filter(
             recipe=obj, user=request.user
         ).exists()
+
+
+class FollowSerializer(UserSerializer):
+    """Сериализатор подписoк."""
+
+    recipes_count = serializers.IntegerField(source='recipes.count',
+                                             read_only=True)
+    recipes = ShowRecipeSerializer(many=True, read_only=True)
+    is_subscribed = serializers.BooleanField(default=True)
+
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username', 'first_name',
+                  'last_name', 'is_subscribed', 'recipes', 'recipes_count'
+                  )
+        read_only_fields = ('email', 'username',
+                            'first_name', 'last_name')
