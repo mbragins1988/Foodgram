@@ -135,6 +135,14 @@ class AddRecipeSerializer(serializers.ModelSerializer):
                 raise ValidationError(
                     'Добавьте один или несколько ингредиентов'
                 )
+        inrgedient_list = [
+            inrgedient['id'] for inrgedient in value
+        ]
+        unique_ingredient_list = set(inrgedient_list)
+        if len(inrgedient_list) != len(unique_ingredient_list):
+            raise serializers.ValidationError(
+                'Ингредиенты должны быть уникальными'
+            )
         return value
 
     @staticmethod
@@ -180,7 +188,9 @@ class ShowRecipeSerializer(serializers.ModelSerializer):
 
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
-    ingredients = serializers.SerializerMethodField()
+    ingredients = ShowIngredientsInRecipeSerializer(
+        many=True, read_only=True, source='recipes'
+    )
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -192,13 +202,8 @@ class ShowRecipeSerializer(serializers.ModelSerializer):
             'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time',
         )
 
-    @staticmethod
-    def get_ingredients(obj):
-        ingredients = RecipeIngredient.objects.filter(recipe=obj)
-        return ShowIngredientsInRecipeSerializer(ingredients, many=True).data
-
     def get_is_favorited(self, obj):
-        request = self.context.get("request")
+        request = self.context.get('request')
         if not request or request.user.is_anonymous:
             return False
         return FavoriteRecipe.objects.filter(
