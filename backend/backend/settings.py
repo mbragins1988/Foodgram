@@ -3,13 +3,14 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', default='secret_key')
+SECRET_KEY = os.getenv('SECRET_KEY', default='django-insecure-s(x_o2^5=#x8cmm!!9va0z#k6y(qr6kai+c2^i^&8ds%5wb-(q')
 
 DEBUG = True
 
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
+    '158.160.46.62',
 ]
 
 INSTALLED_APPS = [
@@ -95,8 +96,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql',),
+        'NAME': os.getenv('DB_NAME', default='postgres'),
+        'USER': os.getenv('POSTGRES_USER', default='postgres'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='310588'),
+        'HOST': os.getenv('DB_HOST', default='db'),
+        'PORT': os.getenv('DB_PORT', default='5432')
     }
 }
 
