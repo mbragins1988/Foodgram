@@ -1,17 +1,23 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(os.path.join(BASE_DIR.parent.parent, 'infra/.env'), verbose=True)
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='django-insecure-s(x_o2^5=#x8cmm!!9va0z#k6y(qr6kai+c2^i^&8ds%5wb-(q')
 
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'localhost',
-    '127.0.0.1',
-    '158.160.46.62',
-]
+# ALLOWED_HOSTS = [
+#     'localhost',
+#     '127.0.0.1',
+#     '158.160.46.62',
+# ]
+
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -96,14 +102,27 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': BASE_DIR / 'db.sqlite3',
         'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql',),
         'NAME': os.getenv('DB_NAME', default='postgres'),
         'USER': os.getenv('POSTGRES_USER', default='postgres'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='310588'),
-        'HOST': os.getenv('DB_HOST', default='db'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
+        'HOST': os.getenv('DB_HOST', default='localhost'),
         'PORT': os.getenv('DB_PORT', default='5432')
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'dbname',
+#         'USER': 'username',
+#         'PASSWORD': 'userpass',
+#         'HOST': '127.0.0.1',
+#         'PORT': '5432'
+#     }
+# }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
