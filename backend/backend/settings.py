@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
+
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -118,7 +120,7 @@ DATABASES = {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
 #         'NAME': 'dbname',
 #         'USER': 'username',
-#         'PASSWORD': 'userpass',
+#         'PASSWORD': 'userpass',.
 #         'HOST': '127.0.0.1',
 #         'PORT': '5432'
 #     }
