@@ -7,9 +7,7 @@ from recipes.models import Ingredient
 
 class Command(BaseCommand):
     '''
-    Заполнение БД модели Ingredient предоставленными данными
-    Создаем миграции
-    Заполняем БД командой python manage.py import_date
+    Заполнение БД модели Ingredient.
     '''
 
     help = 'Импорт данных из ingredients.json в таблицу recipes_ingredient'
