@@ -8,7 +8,6 @@ services:
     env_file:
       - ./.env
 
-
   backend:
     image: mbragin/foodgram_backend:latest
     command: >
