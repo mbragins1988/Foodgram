@@ -1,21 +1,21 @@
 version: '3.3'
 services:
 
-  # db:
-  #   image: postgres:13.0-alpine
-  #   volumes:
-  #     - db_value:/var/lib/postgresql/data/
-  #   env_file:
-  #     - .env
-
   db:
-    image: postgres
-    ports:
-      - "5432:5432"
+    image: postgres:13.0-alpine
     volumes:
-      - "./database:/var/lib/postgresql/data"
+      - db_value:/var/lib/postgresql/data/
     env_file:
       - .env
+
+  # db:
+  #   image: postgres
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - "./database:/var/lib/postgresql/data"
+  #   env_file:
+  #     - .env
 
 
   backend:
