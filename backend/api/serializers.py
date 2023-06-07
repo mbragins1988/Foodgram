@@ -60,6 +60,7 @@ class AddFollowSerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
+    """Сериализатор тэгов."""
     class Meta:
         model = Tag
         fields = ('name', 'color', 'slug')
@@ -70,11 +71,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = (
-            'id',
-            'name',
-            'measurement_unit',
-        )
+        fields = ('id', 'name', 'measurement_unit',)
 
 
 class ShortRecipeSerializer(serializers.ModelSerializer):
@@ -108,7 +105,7 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RecipeIngredient
-        fields = ('id', 'amount')
+        fields = ('id', 'amount', 'name', 'measurement_unit')
 
 
 class AddRecipeSerializer(serializers.ModelSerializer):
