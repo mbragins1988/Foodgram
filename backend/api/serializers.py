@@ -63,8 +63,7 @@ class TagSerializer(serializers.ModelSerializer):
     """Сериализатор тэгов."""
     class Meta:
         model = Tag
-        fields = '__all__'
-        # fields = ('id', 'name', 'color', 'slug')
+        fields = ('id', 'name', 'color', 'slug')
 
 
 class IngredientSerializer(serializers.ModelSerializer):
@@ -160,14 +159,14 @@ class AddRecipeSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         author = self.context.get('request').user
-        tags_data = validated_data.pop('tags')
+        tags = validated_data.pop('tags')
         ingredients_data = validated_data.pop('ingredients')
         image = validated_data.pop('image')
         recipe = Recipe.objects.create(
             image=image, author=author, **validated_data
         )
         self.__add_ingredients(ingredients_data, recipe)
-        recipe.tags.set(tags_data)
+        recipe.tags.set(tags)
         return recipe
 
     def update(self, recipe, validated_data):
