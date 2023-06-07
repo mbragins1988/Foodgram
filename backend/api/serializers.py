@@ -61,6 +61,9 @@ class AddFollowSerializer(serializers.ModelSerializer):
 
 class TagSerializer(serializers.ModelSerializer):
     """Сериализатор тэгов."""
+    id = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(),
+                                            many=True)
+
     class Meta:
         model = Tag
         fields = ('id', 'name', 'color', 'slug')
