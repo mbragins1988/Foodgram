@@ -8,23 +8,8 @@ services:
     env_file:
       - .env
 
-  # db:
-  #   image: postgres
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - "./database:/var/lib/postgresql/data"
-  #   env_file:
-  #     - .env
-
-
   backend:
     image: mbragin/foodgram_backend:latest
-    command: >
-      sh -c "
-               python manage.py migrate &&
-               python manage.py import_date
-               gunicorn backend.wsgi:application --bind 0:8000"
     restart: always
     volumes:
       - static_value:/backend/static/
