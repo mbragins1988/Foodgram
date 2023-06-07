@@ -21,7 +21,7 @@ services:
   backend:
     image: mbragin/foodgram_backend:latest
     command: >
-      sh -c "python manage.py collectstatic --no-input &&
+      sh -c "
                python manage.py migrate &&
                python manage.py import_date
                gunicorn backend.wsgi:application --bind 0:8000"
