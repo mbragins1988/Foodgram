@@ -86,7 +86,7 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
 class ShowIngredientsInRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор отоброжения ингридиента при создание рецепта."""
 
-    id = serializers.ReadOnlyField(source='ingredient.id')
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(
         source='ingredient.measurement_unit'
@@ -95,21 +95,21 @@ class ShowIngredientsInRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeIngredient
         fields = (
-            'id', 'name', 'measurement_unit', 'amount'
+            'id', 'amount', 'name', 'measurement_unit',
         )
 
 
-class IngredientRecipeSerializer(serializers.ModelSerializer):
-    """Сериализатор добавления ингредиентов."""
+# class IngredientRecipeSerializer(serializers.ModelSerializer):
+#     """Сериализатор добавления ингредиентов."""
 
-    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-    name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit')
+#     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+#     name = serializers.ReadOnlyField(source='ingredient.name')
+#     measurement_unit = serializers.ReadOnlyField(
+#         source='ingredient.measurement_unit')
 
-    class Meta:
-        model = RecipeIngredient
-        fields = ('id', 'amount', 'name', 'measurement_unit')
+#     class Meta:
+#         model = RecipeIngredient
+#         fields = ('id', 'amount', 'name', 'measurement_unit')
 
 
 class ShowRecipeSerializer(serializers.ModelSerializer):
@@ -154,7 +154,7 @@ class AddRecipeSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(),
                                               many=True)
     author = UserSerializer(read_only=True)
-    ingredients = IngredientRecipeSerializer(many=True)
+    ingredients = ShowIngredientsInRecipeSerializer(many=True)
     image = Base64ImageField()
 
     class Meta:
