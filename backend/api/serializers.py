@@ -115,9 +115,8 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
 class AddRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор добавления рецепта."""
 
-    # tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(),
-    #                                           many=True)
-    tags = TagSerializer(many=True, read_only=True)
+    tags = serializers.PrimaryKeyRelatedField(queryset=Tag.objects.all(),
+                                              many=True)
     author = UserSerializer(read_only=True)
     ingredients = IngredientRecipeSerializer(many=True)
     image = Base64ImageField()
@@ -191,7 +190,7 @@ class ShowRecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
     ingredients = ShowIngredientsInRecipeSerializer(
-        many=True, read_only=True, source='recipes'
+        many=True, read_only=True, source='recipe_ingredient'
     )
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
