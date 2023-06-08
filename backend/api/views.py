@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from api.filters import NameFilter, RecipeFilter
 from api.pagination import LimitPagesPaginator
 from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
-from api.serializers import (AddFollowSerializer, AddRecipeSerializer,
+from api.serializers import (AddRecipeSerializer,
                              FollowSerializer, IngredientSerializer,
                              ShortRecipeSerializer, ShowRecipeSerializer,
                              TagSerializer, UserSerializer)
@@ -47,7 +47,7 @@ class UserViewSet(UserViewSet):
         queryset = User.objects.filter(following__user=user)
         page = self.paginate_queryset(queryset)
         serializer = FollowSerializer(
-            page, many=True, context={'current_user': request.user}
+            page, many=True, context={'request': request}
         )
         return self.get_paginated_response(serializer.data)
 
@@ -57,16 +57,19 @@ class UserViewSet(UserViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def subscribe(self, request, id):
-        author = get_object_or_404(User, pk=id)
-        serializer = AddFollowSerializer(
-            data={'user': request.user.id, 'author': id}
-        )
+        user = request.user
+        author = get_object_or_404(User, id=id)
+
         if request.method == 'POST':
+            serializer = FollowSerializer(author,
+                                          data=request.data,
+                                          context={'request': request})
             serializer.is_valid(raise_exception=True)
-            serializer.save(user=request.user)
-            serializer = FollowSerializer(author)
+            Follow.objects.create(user=user, author=author)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        follow = get_object_or_404(Follow, user=request.user, author__id=id)
+        follow = get_object_or_404(Follow,
+                                   user=user,
+                                   author=author)
         follow.delete()
         return Response(
             f'Вы отписались от {follow.author}',

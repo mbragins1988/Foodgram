@@ -27,31 +27,6 @@ class UserSerializer(serializers.ModelSerializer):
         return Follow.objects.filter(
             author=obj.id, user=user).exists()
 
-
-class AddFollowSerializer(serializers.ModelSerializer):
-    """Сериализатор создания подписок."""
-
-    author = serializers.IntegerField(source='author.id')
-    user = serializers.IntegerField(source='user.id')
-
-    class Meta:
-        model = Follow
-        fields = ('user', 'author')
-
-    def validate(self, data):
-        user = data.get('user').get('id')
-        author = data.get('author').get('id')
-        follow = Follow.objects.filter(
-            user=user, author__id=author
-        ).exists()
-        if user == author:
-            raise serializers.ValidationError(
-                {"errors": "Невозможно подписаться на самого себя"}
-            )
-        if follow:
-            raise serializers.ValidationError({'errors': 'Вы уже подписаны'})
-        return data
-
     def create(self, validated_data):
         author = validated_data.get('author')
         author = get_object_or_404(User, pk=author.get('id'))
@@ -105,7 +80,7 @@ class ShowRecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
     ingredients = ShowIngredientsInRecipeSerializer(
-        many=True, read_only=True, source='ingredient_recipe'
+        many=True, read_only=True, source='recipe_ingredient'
     )
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
@@ -209,16 +184,32 @@ class AddRecipeSerializer(serializers.ModelSerializer):
 
 class FollowSerializer(UserSerializer):
     """Сериализатор подписoк."""
-
     recipes_count = serializers.IntegerField(source='recipes.count',
                                              read_only=True)
-    recipes = ShowRecipeSerializer(many=True, read_only=True)
+    recipes = serializers.SerializerMethodField(method_name='get_recipes')
     is_subscribed = serializers.BooleanField(default=True)
 
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed', 'recipes', 'recipes_count'
-                  )
+        fields = ('id', 'email', 'username', 'first_name',
+                  'last_name', 'recipes_count', 'recipes',
+                  'is_subscribed')
         read_only_fields = ('email', 'username',
                             'first_name', 'last_name')
+
+    def validate(self, data):
+        author = self.instance
+        user = self.context.get('request').user
+        if Follow.objects.filter(author=author, user=user).exists():
+            raise serializers.ValidationError({'errors': 'Вы уже подписаны'})
+        if user == author:
+            raise serializers.ValidationError(
+                {"errors": "Невозможно подписаться на самого себя"}
+            )
+        return data
+
+    def get_recipes(self, obj):
+        recipes = obj.recipes.all()
+        serializer = ShortRecipeSerializer(recipes, many=True,
+                                           context=self.context)
+        return serializer.data
