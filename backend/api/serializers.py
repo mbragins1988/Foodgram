@@ -98,24 +98,6 @@ class ShowIngredientsInRecipeSerializer(serializers.ModelSerializer):
             'id', 'amount', 'name', 'measurement_unit',
         )
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data['id'] = instance.ingredient.id
-        return data
-
-
-# class IngredientRecipeSerializer(serializers.ModelSerializer):
-#     """Сериализатор добавления ингредиентов."""
-
-#     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-#     name = serializers.ReadOnlyField(source='ingredient.name')
-#     measurement_unit = serializers.ReadOnlyField(
-#         source='ingredient.measurement_unit')
-
-#     class Meta:
-#         model = RecipeIngredient
-#         fields = ('id', 'amount', 'name', 'measurement_unit')
-
 
 class ShowRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор отображения рецепта."""
