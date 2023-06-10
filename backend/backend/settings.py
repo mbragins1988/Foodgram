@@ -9,7 +9,7 @@ load_dotenv(os.path.join(BASE_DIR.parent.parent, 'infra/.env'), verbose=True)
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='django-insecure-s(x_o2^5=#x8cmm!!9va0z#k6y(qr6kai+c2^i^&8ds%5wb-(q')
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
