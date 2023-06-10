@@ -111,6 +111,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return ShowRecipeSerializer
         return AddRecipeSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(author=self.request.user)
+
     def add_or_delete(self, model, where, request, user, pk):
         recipe = get_object_or_404(Recipe, pk=pk)
         obj = model.objects.filter(user=user, recipe=recipe)
