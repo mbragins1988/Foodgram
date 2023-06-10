@@ -64,12 +64,12 @@ git push
 
 Запустите миграции
 ```
-docker-compose exec web python manage.py migrate
+docker-compose exec backend python manage.py migrate
 ```
 
 Импортируйте список ингредиентов в базу данных
 ```
-docker-compose exec web python manage.py import_date
+docker-compose exec backend python manage.py import_date
 ```
 
 Подключите статику для админ-панели
