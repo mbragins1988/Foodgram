@@ -74,7 +74,7 @@ docker-compose exec backend python manage.py import_date
 
 Подключите статику для админ-панели
 ```
-sudo docker-compose exec -T web python manage.py collectstatic --no-input
+sudo docker-compose exec -T backend python manage.py collectstatic --no-input
 ```
 
 ### документация на локальном компьютере:
