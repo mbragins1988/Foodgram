@@ -86,9 +86,8 @@ http://158.160.46.62/api/docs/
 ### Стек технологий:
 - Python 3.7
 - Django
-- Rest_Framework
-- simple_jwt
-- csv
+- Django REST framework
+- Docker
 
 ## Разработчики:
 - Михаил Брагин

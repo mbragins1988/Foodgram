@@ -10,10 +10,10 @@ from rest_framework.response import Response
 from api.filters import NameFilter, RecipeFilter
 from api.pagination import LimitPagesPaginator
 from api.permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
-from api.serializers import (AddRecipeSerializer, FollowSerializer,
-                             IngredientSerializer, ShortRecipeSerializer,
-                             ShowRecipeSerializer, TagSerializer,
-                             UserSerializer)
+from api.serializers import (AddRecipeSerializer,
+                             FollowSerializer, IngredientSerializer,
+                             ShortRecipeSerializer, ShowRecipeSerializer,
+                             TagSerializer, UserSerializer)
 from api.shopping_cart import shopping_cart
 from recipes.models import (FavoriteRecipe, Ingredient, Recipe,
                             RecipeIngredient, ShoppingCart)
@@ -110,12 +110,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if self.request.method in SAFE_METHODS:
             return ShowRecipeSerializer
         return AddRecipeSerializer
-
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
-
-    def perform_update(self, serializer):
-        serializer.save(author=self.request.user)
 
     def add_or_delete(self, model, where, request, user, pk):
         recipe = get_object_or_404(Recipe, pk=pk)
